@@ -120,11 +120,6 @@
                             {{ form.password1 }}
                             <button type="button" class="password-toggle-btn" data-toggle="password1">👁️</button>
                         </div>
-                        {% if form.password1.errors %}
-                            <div class="form-error">
-                                {{ form.password1.errors.0 }}
-                            </div>
-                        {% endif %}
                     </div>
                     
                     <!-- Confirm Password Field -->
@@ -136,11 +131,6 @@
                             {{ form.password2 }}
                             <button type="button" class="password-toggle-btn" data-toggle="password2">👁️</button>
                         </div>
-                        {% if form.password2.errors %}
-                            <div class="form-error">
-                                {{ form.password2.errors.0 }}
-                            </div>
-                        {% endif %}
                     </div>
                     
                     <!-- Non-field Errors -->
@@ -175,6 +165,22 @@
 </div>
 
 <script>
+    // Store password errors to show in popup on submit
+    const passwordErrors = {
+        password1: [{% if form.password1.errors %}{% for error in form.password1.errors %}'{{ error }}'{{ forloop.comma }}{% endfor %}{% endif %}],
+        password2: [{% if form.password2.errors %}{% for error in form.password2.errors %}'{{ error }}'{{ forloop.comma }}{% endfor %}{% endif %}]
+    };
+    
+    // Show error popup if there are password errors
+    if (passwordErrors.password1.length > 0 || passwordErrors.password2.length > 0) {
+        const allErrors = [...passwordErrors.password1, ...passwordErrors.password2];
+        if (allErrors.length > 0) {
+            setTimeout(() => {
+                alert('❌ Password Error:\n\n' + allErrors.join('\n'));
+            }, 300);
+        }
+    }
+    
     document.querySelectorAll('.password-toggle-btn').forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
@@ -185,6 +191,28 @@
                 this.textContent = field.type === 'password' ? '👁️' : '🙈';
             }
         });
+    });
+    
+    // Also validate on form submit and show popup
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const password1 = document.getElementById('id_password1').value;
+        const password2 = document.getElementById('id_password2').value;
+        const errors = [];
+        
+        if (!password1) {
+            errors.push('Password is required');
+        }
+        if (!password2) {
+            errors.push('Password confirmation is required');
+        }
+        if (password1 && password2 && password1 !== password2) {
+            errors.push('Passwords do not match');
+        }
+        
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert('❌ Password Error:\n\n' + errors.join('\n'));
+        }
     });
 </script>
 {% endblock %}
