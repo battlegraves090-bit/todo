@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login - Todo App{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow: hidden;
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    nav {
+        display: none;
+    }
+    
+    main {
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+    
+    footer {
+        display: none;
+    }
+    
+    .login-wrapper {
+        width: 100%;
+        padding: 20px;
+    }
+    
+    .login-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 60px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .login-hero {
+        flex: 1;
+        color: var(--text-primary);
+        display: none;
+    }
+    
+    .login-hero h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        line-height: 1.2;
+        color: var(--primary-color);
+    }
+    
+    .login-hero p {
+        font-size: 1.125rem;
+        opacity: 0.9;
+        margin-bottom: 30px;
+        line-height: 1.6;
+        color: var(--text-secondary);
+    }
+    
+    .login-hero ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .login-hero li {
+        margin-bottom: 15px;
+        font-size: 1rem;
+        color: var(--text-secondary);
+    }
+    
+    .login-hero li::before {
+        content: '✓ ';
+        font-weight: bold;
+        margin-right: 10px;
+        color: var(--primary-color);
+    }
+    
+    @media (min-width: 1024px) {
+        .login-hero {
+            display: block;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-content">
+        <!-- Hero Section -->
+        <div class="login-hero animate-fade-in">
+            <h2>Stay Organized</h2>
+            <p>Master your tasks and boost your productivity with our powerful todo application.</p>
+            <ul>
+                <li>Create and manage tasks effortlessly</li>
+                <li>Set priorities and due dates</li>
+                <li>Track your progress in real-time</li>
+                <li>Sync across all your devices</li>
+            </ul>
+        </div>
+    
+        <!-- Login Form -->
+        <div class="auth-container animate-fade-in" style="animation-delay: 0.2s">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">✨</div>
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to your account</p>
+                </div>
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Username Field -->
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            👤 Username
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="form-error">
+                                {{ form.username.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            🔒 Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            {{ form.password }}
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('{{ form.password.id_for_label }}')">
+                                👁️
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="form-error">
+                                {{ form.password.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Non-field Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-error mb-lg">
+                            <span class="alert-icon">❌</span>
+                            <span>{{ form.non_field_errors.0 }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-login" onclick="addRippleEffect(event)">
+                        <span>Sign In</span>
+                        <span>→</span>
+                    </button>
+                </form>
+                
+                <!-- Footer Link -->
+                <div class="auth-footer">
+                    <p>
+                        Don't have an account?
+                        <a href="{% url 'register' %}">Create one now</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePasswordVisibility(fieldLabel) {
+        const inputId = fieldLabel.replace('id_', '');
+        const field = document.getElementById('id_' + inputId);
+        if (field) {
+            field.type = field.type === 'password' ? 'text' : 'password';
+            event.target.textContent = field.type === 'password' ? '👁️' : '🙈';
+        }
+    }
+</script>
+
+{% endblock %}

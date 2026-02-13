@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A productive and beautiful to-do application">
+    <meta name="theme-color" content="#34D399">
+    <title>{% block title %}Todo App{% endblock %}</title>
+    
+    <!-- Font: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Notifications Container -->
+    <div id="notifications" class="notifications-container"></div>
+    
+    {% if user.is_authenticated %}
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="navbar-container">
+                <a href="{% url 'dashboard' %}" class="navbar-brand">
+                    <span style="font-size: 1.5rem;">✓</span>
+                    Todo
+                </a>
+                
+                <ul class="navbar-menu">
+                    <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li><a href="{% url 'task_list' %}">Tasks</a></li>
+                    
+                    <!-- Profile Dropdown -->
+                    <li class="profile-dropdown">
+                        <button id="profile-btn" class="navbar-menu-link" style="background: none; border: none; cursor: pointer; padding: var(--spacing-sm) var(--spacing-md); color: var(--text-secondary); font-weight: 500;">
+                            👤 <span>{{ user.username }}</span>
+                        </button>
+                        <ul id="dropdown-menu" class="dropdown-menu">
+                            <li><a href="{% url 'profile' %}">My Profile</a></li>
+                            <li><a href="{% url 'task_create' %}">Create Task</a></li>
+                            <li><a href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Sign Out Button -->
+                    <li><a href="{% url 'logout' %}" class="btn btn-primary btn-small" style="margin-left: var(--spacing-md);">Sign Out</a></li>
+                </ul>
+            </div>
+        </nav>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} animate-slide-in">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary); border-top: none; margin-top: var(--spacing-2xl); position: relative; z-index: 1;">
+        <p>&copy; 2026 Todo App. Built with Django.</p>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- CSRF Token for AJAX -->
+    {% csrf_token %}
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

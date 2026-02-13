@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register - Todo App{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    nav {
+        display: none;
+    }
+    
+    main {
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+    
+    footer {
+        display: none;
+    }
+    
+    .register-wrapper {
+        width: 100%;
+        padding: 20px;
+    }
+    
+    .register-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-wrapper">
+    <div class="register-content">
+        <!-- Register Form -->
+        <div class="auth-container animate-fade-in">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">🚀</div>
+                    <h1>Create Account</h1>
+                    <p>Get started with organizing your tasks</p>
+                </div>
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Username Field -->
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            👤 Username
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="form-error">
+                                {{ form.username.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            📧 Email Address
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="form-error">
+                                {{ form.email.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            🔒 Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            {{ form.password1 }}
+                            <button type="button" class="password-toggle-btn" data-toggle="password1">👁️</button>
+                        </div>
+                        {% if form.password1.errors %}
+                            <div class="form-error">
+                                {{ form.password1.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Confirm Password Field -->
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            ✓ Confirm Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            {{ form.password2 }}
+                            <button type="button" class="password-toggle-btn" data-toggle="password2">👁️</button>
+                        </div>
+                        {% if form.password2.errors %}
+                            <div class="form-error">
+                                {{ form.password2.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Non-field Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-error mb-lg">
+                            <span class="alert-icon">❌</span>
+                            <div>
+                                {% for error in form.non_field_errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-login" onclick="addRippleEffect(event)">
+                        <span>Create Account</span>
+                        <span>→</span>
+                    </button>
+                </form>
+                
+                <!-- Footer Link -->
+                <div class="auth-footer">
+                    <p>
+                        Already have an account?
+                        <a href="{% url 'login' %}">Sign in here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.password-toggle-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const fieldId = 'id_' + this.dataset.toggle;
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.type = field.type === 'password' ? 'text' : 'password';
+                this.textContent = field.type === 'password' ? '👁️' : '🙈';
+            }
+        });
+    });
+</script>
+{% endblock %}

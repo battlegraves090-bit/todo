@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profile - Todo App{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>My Profile</h1>
+            <p>Manage your account settings and preferences</p>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-2xl); border-bottom: 2px solid var(--border-color);">
+            <button onclick="switchTab('profile')" class="tab-btn active" style="padding: var(--spacing-md); border: none; background: none; cursor: pointer; border-bottom: 3px solid var(--primary-color); color: var(--primary-color); font-weight: 500;">
+                👤 Profile
+            </button>
+            <button onclick="switchTab('password')" class="tab-btn" style="padding: var(--spacing-md); border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: 500; transition: all var(--transition-base);">
+                🔐 Password
+            </button>
+            <button onclick="switchTab('danger')" class="tab-btn" style="padding: var(--spacing-md); border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: 500; transition: all var(--transition-base);">
+                ⚠️ Danger Zone
+            </button>
+        </div>
+        
+        <!-- Profile Tab -->
+        <div id="profile-tab" class="tab-content">
+            <!-- Task Statistics -->
+            <div class="grid grid-cols-3 mb-2xl">
+                <div class="stat-card">
+                    <h3>{{ total_tasks }}</h3>
+                    <p>Total Tasks</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ completed_tasks }}</h3>
+                    <p>Completed</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ pending_tasks }}</h3>
+                    <p>Pending</p>
+                </div>
+            </div>
+            
+            <!-- Profile Information Card -->
+            <div class="card mb-lg">
+                <div class="card-header">
+                    <h2>Account Information</h2>
+                </div>
+                <form method="post" action="{% url 'edit_profile' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <!-- Username -->
+                        <div class="form-group">
+                            <label for="{{ edit_form.username.id_for_label }}" class="form-label">Username</label>
+                            {{ edit_form.username }}
+                            {% if edit_form.username.errors %}
+                                <div class="form-error">{{ edit_form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label for="{{ edit_form.email.id_for_label }}" class="form-label">Email Address</label>
+                            {{ edit_form.email }}
+                            {% if edit_form.email.errors %}
+                                <div class="form-error">{{ edit_form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- First Name -->
+                        <div class="form-group">
+                            <label for="{{ edit_form.first_name.id_for_label }}" class="form-label">First Name</label>
+                            {{ edit_form.first_name }}
+                            {% if edit_form.first_name.errors %}
+                                <div class="form-error">{{ edit_form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div class="form-group">
+                            <label for="{{ edit_form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                            {{ edit_form.last_name }}
+                            {% if edit_form.last_name.errors %}
+                                <div class="form-error">{{ edit_form.last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'profile' %}" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Bio Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Bio</h2>
+                </div>
+                <form method="post" action="{% url 'edit_profile_bio' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="{{ profile_form.bio.id_for_label }}" class="form-label">Tell us about yourself</label>
+                            {{ profile_form.bio }}
+                            <small style="color: var(--text-secondary);">
+                                Maximum 500 characters
+                            </small>
+                            {% if profile_form.bio.errors %}
+                                <div class="form-error">{{ profile_form.bio.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'profile' %}" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Bio</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Password Tab -->
+        <div id="password-tab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Change Password</h2>
+                </div>
+                <form method="post" action="{% url 'change_password' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <!-- Old Password -->
+                        <div class="form-group">
+                            <label for="{{ password_form.old_password.id_for_label }}" class="form-label">
+                                Current Password
+                            </label>
+                            {{ password_form.old_password }}
+                            {% if password_form.old_password.errors %}
+                                <div class="form-error">{{ password_form.old_password.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- New Password 1 -->
+                        <div class="form-group">
+                            <label for="{{ password_form.new_password1.id_for_label }}" class="form-label">
+                                New Password
+                            </label>
+                            {{ password_form.new_password1 }}
+                            {% if password_form.new_password1.errors %}
+                                <div class="form-error">{{ password_form.new_password1.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- New Password 2 -->
+                        <div class="form-group">
+                            <label for="{{ password_form.new_password2.id_for_label }}" class="form-label">
+                                Confirm New Password
+                            </label>
+                            {{ password_form.new_password2 }}
+                            {% if password_form.new_password2.errors %}
+                                <div class="form-error">{{ password_form.new_password2.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'profile' %}" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Danger Zone Tab -->
+        <div id="danger-tab" class="tab-content" style="display: none;">
+            <div class="card" style="border-color: var(--danger-color);">
+                <div class="card-header" style="border-bottom-color: var(--danger-color);">
+                    <h2 style="color: var(--danger-color);">⚠️ Danger Zone</h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                        Once you delete your account, there is no going back. This action is permanent and cannot be undone.
+                    </p>
+                    <div style="background-color: rgba(239, 68, 68, 0.05); padding: var(--spacing-lg); border-radius: var(--radius-md); border-left: 4px solid var(--danger-color);">
+                        <p style="color: var(--danger-color); font-weight: 500; margin-bottom: var(--spacing-md);">
+                            Deleting your account will:
+                        </p>
+                        <ul style="color: var(--text-secondary); margin-left: var(--spacing-lg);">
+                            <li>Permanently delete all your tasks</li>
+                            <li>Remove all your personal information</li>
+                            <li>Prevent you from logging in with this email</li>
+                            <li>Cannot be reversed</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'profile' %}" class="btn btn-outline">Cancel</a>
+                    <button onclick="handleDeleteAccount()" class="btn btn-danger">Delete My Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-btn:hover {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+    
+    .tab-btn.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+</style>
+
+<script>
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.style.display = 'none';
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Show selected tab
+        const tab = document.getElementById(tabName + '-tab');
+        if (tab) {
+            tab.style.display = 'block';
+            const btn = document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`);
+            if (btn) {
+                btn.classList.add('active');
+            }
+        }
+    }
+    
+    function handleDeleteAccount() {
+        if (confirm('Are you absolutely sure? This action is irreversible!')) {
+            // Show delete confirmation form
+            const deleteForm = document.createElement('form');
+            deleteForm.method = 'post';
+            deleteForm.action = '{% url "delete_account" %}';
+            deleteForm.innerHTML = `
+                {% csrf_token %}
+                <input type="hidden" name="confirm" value="on">
+            `;
+            
+            // Get password from user
+            const password = prompt('Enter your password to confirm account deletion:');
+            if (password) {
+                deleteForm.innerHTML = `
+                    {% csrf_token %}
+                    <input type="hidden" name="password" value="${password}">
+                    <input type="hidden" name="confirm" value="on">
+                `;
+                document.body.appendChild(deleteForm);
+                deleteForm.submit();
+            }
+        }
+    }
+</script>
+{% endblock %}

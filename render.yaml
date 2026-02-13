@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: todo-app
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn todoapp.wsgi
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*.onrender.com"
+      - key: SECRET_KEY
+        generateValue: true

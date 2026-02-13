@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ form_title }} - Todo App{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div style="max-width: 600px; margin: 0 auto;">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>{{ form_title }}</h1>
+        </div>
+        
+        <!-- Form Card -->
+        <div class="card">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Title Field -->
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">
+                        Task Title <span style="color: var(--danger-color);">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="form-error">
+                            {{ form.title.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Description Field -->
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">
+                        Description
+                    </label>
+                    {{ form.description }}
+                    <small style="color: var(--text-secondary);">
+                        Optional. Provide additional details about the task.
+                    </small>
+                    {% if form.description.errors %}
+                        <div class="form-error">
+                            {{ form.description.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Due Date Field -->
+                <div class="form-group">
+                    <label for="{{ form.due_date.id_for_label }}" class="form-label">
+                        Due Date
+                    </label>
+                    {{ form.due_date }}
+                    <small style="color: var(--text-secondary);">
+                        Optional. Set a deadline for the task.
+                    </small>
+                    {% if form.due_date.errors %}
+                        <div class="form-error">
+                            {{ form.due_date.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Priority Field -->
+                <div class="form-group">
+                    <label for="{{ form.priority.id_for_label }}" class="form-label">
+                        Priority <span style="color: var(--danger-color);">*</span>
+                    </label>
+                    {{ form.priority }}
+                    <small style="color: var(--text-secondary);">
+                        Choose how urgent this task is.
+                    </small>
+                    {% if form.priority.errors %}
+                        <div class="form-error">
+                            {{ form.priority.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Non-field Errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-error mb-lg">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Form Actions -->
+                <div class="card-footer">
+                    <a href="{% url 'task_list' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}
+                            Update Task
+                        {% else %}
+                            Create Task
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Help Text -->
+        <div style="margin-top: var(--spacing-2xl); padding: var(--spacing-lg); background-color: var(--card-bg); border-left: 4px solid var(--secondary-color); border-radius: var(--radius-md);">
+            <h3 style="margin-bottom: var(--spacing-md); color: var(--secondary-color);">💡 Tips</h3>
+            <ul style="color: var(--text-secondary); margin-left: var(--spacing-lg);">
+                <li>Be specific with your task title so you know exactly what to do</li>
+                <li>Use the description to add context or steps needed</li>
+                <li>Set due dates to keep track of deadlines</li>
+                <li>Prioritize tasks to focus on what's most important</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

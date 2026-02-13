@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Todo App{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Page Header with Animation -->
+    <div class="page-header animate-fade-in">
+        <h1>Welcome, {{ user.first_name|default:user.username }}! 👋</h1>
+        <p>Here's your task overview for today</p>
+    </div>
+    
+    <!-- Statistics Cards with Staggered Animation -->
+    <div class="grid grid-cols-4 mb-2xl">
+        <!-- Total Tasks Card -->
+        <div class="stat-card animate-slide-in" style="animation-delay: 0.1s">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ total_tasks }}</h3>
+                <p class="stat-label">Total Tasks</p>
+            </div>
+        </div>
+        
+        <!-- Completed Tasks Card -->
+        <div class="stat-card animate-slide-in" style="animation-delay: 0.2s">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ completed_tasks }}</h3>
+                <p class="stat-label">Completed</p>
+            </div>
+        </div>
+        
+        <!-- Pending Tasks Card -->
+        <div class="stat-card animate-slide-in" style="animation-delay: 0.3s">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ pending_tasks }}</h3>
+                <p class="stat-label">Pending</p>
+            </div>
+        </div>
+        
+        <!-- High Priority Card -->
+        <div class="stat-card animate-slide-in" style="animation-delay: 0.4s">
+            <div class="stat-icon">🔴</div>
+            <div class="stat-content">
+                <h3 class="stat-number">{{ high_priority_tasks }}</h3>
+                <p class="stat-label">High Priority</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Completion Progress -->
+    {% if total_tasks > 0 %}
+    <div class="card mb-2xl animate-fade-in" style="animation-delay: 0.5s">
+        <div class="card-header">
+            <h2>Overall Progress</h2>
+        </div>
+        <div class="card-body">
+            <p class="mb-md">You've completed <strong>{{ completion_percentage }}%</strong> of your tasks</p>
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" data-progress="{{ completion_percentage }}"></div>
+                </div>
+                <span class="progress-text">{{ completion_percentage }}%</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Alerts for Special Cases with Icons -->
+    {% if overdue_tasks > 0 %}
+    <div class="alert alert-warning mb-lg animate-slide-in">
+        <span class="alert-icon">⚠️</span>
+        <span>You have <strong>{{ overdue_tasks }} overdue task{{ overdue_tasks|pluralize }}</strong>. Please review and complete them as soon as possible!</span>
+    </div>
+    {% endif %}
+    
+    {% if due_today > 0 %}
+    <div class="alert alert-info mb-lg animate-slide-in">
+        <span class="alert-icon">📅</span>
+        <span>You have <strong>{{ due_today }} task{{ due_today|pluralize }} due today</strong>!</span>
+    </div>
+    {% endif %}
+    
+    <!-- Quick Add Task Section -->
+    <div class="card mb-2xl animate-fade-in" style="animation-delay: 0.6s">
+        <div class="card-header">
+            <h2>⚡ Quick Add Task</h2>
+        </div>
+        <div class="card-body">
+            <form onsubmit="return quickAddTask(this)">
+                {% csrf_token %}
+                <div class="flex gap-md">
+                    <input 
+                        type="text" 
+                        name="title" 
+                        class="form-input" 
+                        placeholder="Enter a new task..." 
+                        required
+                    >
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Recent Tasks -->
+    {% if recent_tasks %}
+    <div class="card">
+        <div class="card-header flex-between">
+            <h2>Recent Tasks</h2>
+            <a href="{% url 'task_list' %}" class="btn btn-small btn-outline">View All</a>
+        </div>
+        <div class="card-body">
+            <div class="task-list">
+                {% for task in recent_tasks %}
+                    <div class="task-item {% if task.completed %}completed{% endif %}" data-task-id="{{ task.id }}">
+                        <input 
+                            type="checkbox" 
+                            class="task-checkbox" 
+                            data-task-id="{{ task.id }}"
+                            {% if task.completed %}checked{% endif %}
+                        >
+                        <div class="task-content">
+                            <div class="task-title">{{ task.title }}</div>
+                            {% if task.description %}
+                                <div class="task-description">{{ task.description|truncatewords:20 }}</div>
+                            {% endif %}
+                            <div class="task-meta">
+                                <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                                {% if task.due_date %}
+                                    <span class="task-due-date {% if task.is_overdue %}overdue{% endif %}">
+                                        📅 Due: {{ task.due_date|date:"M d, Y" }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <a href="{% url 'task_edit' task.id %}" class="task-action-btn" title="Edit">✏️</a>
+                            <button type="button" class="task-action-btn delete-btn" data-task-id="{{ task.id }}" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🎉</div>
+        <h3>All caught up!</h3>
+        <p>You don't have any tasks yet. Create one to get started!</p>
+        <a href="{% url 'task_create' %}" class="btn btn-primary mt-lg">Create Your First Task</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize progress bar
+    function initProgressBar() {
+        const progressFill = document.getElementById('progress-fill');
+        if (progressFill) {
+            const progress = parseInt(progressFill.dataset.progress) || 0;
+            progressFill.style.width = progress + '%';
+            progressFill.style.transition = 'width 1s ease-out';
+        }
+    }
+
+    // Handle delete button clicks
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const taskId = this.dataset.taskId;
+            deleteTask(taskId);
+        });
+    });
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initProgressBar);
+    
+    // Update stats periodically
+    setInterval(updateCompletionStats, 30000);
+</script>
+{% endblock %}

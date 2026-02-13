@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delete Task - Todo App{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div style="max-width: 500px; margin: 0 auto;">
+        <!-- Alert -->
+        <div class="alert alert-warning mb-2xl" style="text-align: center;">
+            ⚠️ This action cannot be undone
+        </div>
+        
+        <!-- Confirmation Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 style="color: var(--danger-color);">Delete Task?</h2>
+            </div>
+            
+            <div class="card-body">
+                <p style="margin-bottom: var(--spacing-lg);">
+                    Are you sure you want to delete the following task?
+                </p>
+                
+                <!-- Task Details -->
+                <div style="background-color: var(--background-color); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+                    <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm);">
+                        {{ object.title }}
+                    </h3>
+                    {% if object.description %}
+                        <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
+                            {{ object.description|truncatewords:30 }}
+                        </p>
+                    {% endif %}
+                    <div style="margin-top: var(--spacing-md); font-size: var(--font-size-sm); color: var(--text-secondary);">
+                        <span class="badge badge-{{ object.priority }}">{{ object.get_priority_display }}</span>
+                        {% if object.due_date %}
+                            <span style="margin-left: var(--spacing-md);">📅 {{ object.due_date|date:"M d, Y" }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <p style="color: var(--danger-color); font-weight: 500;">
+                    This task will be permanently deleted from your account.
+                </p>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card-footer">
+                <a href="{% url 'task_list' %}" class="btn btn-outline">Keep Task</a>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Task</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

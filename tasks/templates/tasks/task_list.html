@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Tasks - Todo App{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Page Header -->
+    <div class="page-header flex-between">
+        <div>
+            <h1>Your Tasks</h1>
+            <p>Manage and organize all your to-do items</p>
+        </div>
+        <a href="{% url 'task_create' %}" class="btn btn-primary btn-large">+ Create Task</a>
+    </div>
+    
+    <!-- Task Statistics -->
+    <div class="grid grid-cols-3 mb-2xl">
+        <div class="stat-card">
+            <h3 id="total-tasks-count">{{ total_tasks }}</h3>
+            <p>Total Tasks</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="completed-tasks-count">{{ completed_tasks }}</h3>
+            <p>Completed</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="pending-tasks-count">{{ pending_tasks }}</h3>
+            <p>Pending</p>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="task-filters">
+        <div class="grid grid-cols-3">
+            <!-- Status Filter -->
+            <div class="filter-group">
+                <label for="status-filter" class="form-label">Status</label>
+                <select id="status-filter" class="form-select">
+                    <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Tasks</option>
+                    <option value="completed" {% if current_status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                </select>
+            </div>
+            
+            <!-- Priority Filter -->
+            <div class="filter-group">
+                <label for="priority-filter" class="form-label">Priority</label>
+                <select id="priority-filter" class="form-select">
+                    <option value="">All Priorities</option>
+                    <option value="high" {% if current_priority == 'high' %}selected{% endif %}>High Priority</option>
+                    <option value="medium" {% if current_priority == 'medium' %}selected{% endif %}>Medium Priority</option>
+                    <option value="low" {% if current_priority == 'low' %}selected{% endif %}>Low Priority</option>
+                </select>
+            </div>
+            
+            <!-- Search -->
+            <div class="filter-group">
+                <label for="search-input" class="form-label">Search</label>
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="form-input" 
+                    placeholder="Search tasks..."
+                    value="{{ search_query }}"
+                >
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task List -->
+    <div class="task-list">
+        {% if object_list %}
+            {% for task in object_list %}
+                <div class="task-item {% if task.completed %}completed{% endif %}" data-task-id="{{ task.id }}">
+                    <!-- Checkbox -->
+                    <input 
+                        type="checkbox" 
+                        class="task-checkbox" 
+                        data-task-id="{{ task.id }}"
+                        {% if task.completed %}checked{% endif %}
+                    >
+                    
+                    <!-- Task Content -->
+                    <div class="task-content">
+                        <div class="task-title">{{ task.title }}</div>
+                        
+                        {% if task.description %}
+                            <div class="task-description">{{ task.description }}</div>
+                        {% endif %}
+                        
+                        <div class="task-meta">
+                            <!-- Priority Badge -->
+                            <span class="badge badge-{{ task.priority }}">
+                                {{ task.get_priority_display }}
+                            </span>
+                            
+                            <!-- Due Date -->
+                            {% if task.due_date %}
+                                <span class="task-due-date {% if task.is_overdue %}overdue{% endif %}">
+                                    📅 {{ task.due_date|date:"M d, Y" }}
+                                </span>
+                            {% endif %}
+                            
+                            <!-- Created Date -->
+                            <span class="task-created">
+                                Created: {{ task.created_at|date:"M d, Y" }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="task-actions">
+                        <a href="{% url 'task_edit' task.id %}" class="task-action-btn" title="Edit Task">
+                            ✏️
+                        </a>
+                        <button 
+                            type="button" 
+                            class="task-action-btn delete-btn" 
+                            data-task-id="{{ task.id }}"
+                            title="Delete Task"
+                        >
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <h3>No tasks found</h3>
+                <p>
+                    {% if search_query or current_status != 'all' or current_priority %}
+                        Try adjusting your filters or search query
+                    {% else %}
+                        Create a new task to get started!
+                    {% endif %}
+                </p>
+                <a href="{% url 'task_create' %}" class="btn btn-primary mt-lg">Create Task</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pagination" style="margin-top: var(--spacing-2xl); text-align: center;">
+        {% if page_obj.has_previous %}
+            <a href="?page=1" class="btn btn-outline btn-small">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-small">Previous</a>
+        {% endif %}
+        
+        <span style="margin: 0 var(--spacing-md);">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline btn-small">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline btn-small">Last</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Attach event listeners to checkboxes
+    document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            toggleTaskStatus(this.dataset.taskId, this);
+        });
+    });
+    
+    // Attach event listeners to delete buttons
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteTask(this.dataset.taskId);
+        });
+    });
+</script>
+{% endblock %}
