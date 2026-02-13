@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn todoapp.wsgi
+    startCommand: gunicorn todoapp.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DEBUG
         value: "False"
@@ -13,3 +13,4 @@ services:
         value: "*.onrender.com"
       - key: SECRET_KEY
         generateValue: true
+
